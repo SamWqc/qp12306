@@ -5,6 +5,7 @@ import re
 import os
 from urllib.parse import unquote,quote
 import datetime
+import time
 
 class Config(object):
 
@@ -13,6 +14,13 @@ class Config(object):
     date2=now+datetime.timedelta(days=2)
     date2=date2.strftime('%Y-%m-%d')
 
+    @staticmethod
+    def date_form_trans(train_date):
+        date_arr=time.strptime(train_date,"%Y%m%d")
+        time_tamp=time.mktime(date_arr)
+        time_local=time.localtime(time_tamp)
+        format='%a %b %d %Y %H:%M:%S GMT+0800 (China Standard Time)'
+        return  time.strftime(format,time_local)
 
     seat_dic={
 
@@ -26,7 +34,6 @@ class Config(object):
             'O': 'sec_seat',
             'WZ': 'no_seat'
         }
-
 
     @staticmethod
     def get_station_file_path():
@@ -66,6 +73,8 @@ class All_url(object):
     # whatsSelect: 1
     # _json_att:
     # REPEAT_SUBMIT_TOKEN: 5bcf3350f6a4c3a199fa06fb582c0f3f
+    Queue_count_url='https://kyfw.12306.cn/otn/confirmPassenger/getQueueCount'# post查询车票余量
+    confirm_queue_url='https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue'
 
 
 class APITool(QObject):
@@ -129,7 +138,7 @@ class APITool(QObject):
         BIGGip_otn = cookies_1['BIGipServerotn']
         route=cookies_2['route']
 
-        my_cookie='_passport_ct='+pass_ct+'; _passport_session='+pass_session+'; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1554788942127; RAIL_DEVICEID=Y4IgyRD7HrMJJolLl2Vkkv1TYOqODnX6JUSMFEG5l8aVQsCfk7JfFkRiSHHceuhGGBVcjeZS82T-gpStar_RRAZ6dR5R3EBdpwYBKyBgXIkmSHSer6jmfrhMNsJT4QBdGNbPIFmuJgMFgqokjvmp22rZW8NdMggo; route='+route+'; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+        my_cookie='_passport_ct='+pass_ct+'; _passport_session='+pass_session+'; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route='+route+'; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
         headers = {
             'Cookie': my_cookie,
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -158,7 +167,7 @@ class APITool(QObject):
             JSESSIONID = 'J' + JSESSIONID[0]
 
 
-            my_cookie = '_passport_session=' + pass_session + '; uamtk=' + uamtk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1554788942127; RAIL_DEVICEID=Y4IgyRD7HrMJJolLl2Vkkv1TYOqODnX6JUSMFEG5l8aVQsCfk7JfFkRiSHHceuhGGBVcjeZS82T-gpStar_RRAZ6dR5R3EBdpwYBKyBgXIkmSHSer6jmfrhMNsJT4QBdGNbPIFmuJgMFgqokjvmp22rZW8NdMggo; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+            my_cookie = '_passport_session=' + pass_session + '; uamtk=' + uamtk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
             headers = {
                 'Cookie': my_cookie,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -171,7 +180,7 @@ class APITool(QObject):
             tk = dic['newapptk']
             print(response.json()['result_message'])
 
-            my_cookie = JSESSIONID + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1554788942127; RAIL_DEVICEID=Y4IgyRD7HrMJJolLl2Vkkv1TYOqODnX6JUSMFEG5l8aVQsCfk7JfFkRiSHHceuhGGBVcjeZS82T-gpStar_RRAZ6dR5R3EBdpwYBKyBgXIkmSHSer6jmfrhMNsJT4QBdGNbPIFmuJgMFgqokjvmp22rZW8NdMggo; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+            my_cookie = JSESSIONID + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
             headers = {
                 'Cookie': my_cookie,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -179,7 +188,7 @@ class APITool(QObject):
             cls.session.headers = headers
             response = cls.session.post(All_url.uamtkclient_url, data={'tk': tk})
 
-            my_cookie = JSESSIONID + '; tk=' + tk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1554788942127; RAIL_DEVICEID=Y4IgyRD7HrMJJolLl2Vkkv1TYOqODnX6JUSMFEG5l8aVQsCfk7JfFkRiSHHceuhGGBVcjeZS82T-gpStar_RRAZ6dR5R3EBdpwYBKyBgXIkmSHSer6jmfrhMNsJT4QBdGNbPIFmuJgMFgqokjvmp22rZW8NdMggo; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+            my_cookie = JSESSIONID + '; tk=' + tk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
             headers = {
                 'Cookie': my_cookie,
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -188,7 +197,6 @@ class APITool(QObject):
             response = cls.session.post(All_url.greeting_url)
             dic = response.json()
             hello=dic['data']['user_name']+dic['data']['user_regard']
-            print(hello)
 
         else:#密码或者用户错误
             return None
@@ -227,7 +235,6 @@ class APITool(QObject):
 
     @classmethod
     def ticket_query(cls,train_date,from_station,to_station,purpose_codes,seat_type=None):
-
         cls.query_dic={
             'train_date':train_date,
             'purpose_codes':purpose_codes,
@@ -243,7 +250,6 @@ class APITool(QObject):
         }
         response=cls.session.get(All_url.ticket_query_url,params=query_params)
         result=response.json()
-
         train_Dicts=[]
         if result['httpstatus']==200:
             items = result['data']['result']
@@ -290,7 +296,6 @@ class APITool(QObject):
     def checkUser_login(cls):
         response=cls.session.post(All_url.checkUser_url,data={'_json_att':''})
         dic=response.json()
-        print(dic)
         is_login=dic['data']['flag']
         return is_login
 
@@ -319,9 +324,7 @@ class APITool(QObject):
     @classmethod
     def initDc(cls):
         response = cls.session.post(All_url.initDc_url, data={'_json_att':''})
-
-        token = re.findall(r'var globalRepeatSubmitToken = (.*?)', response.text)
-        print(token)
+        token = re.findall(r"var globalRepeatSubmitToken = '(.*?)'", response.text)
         return token
 
     @classmethod
@@ -347,9 +350,9 @@ class APITool(QObject):
             'cancel_flag': '2', #固定值
             'bed_level_order_num': '000000000000000000000000000000',#固定值
 
-            'passengerTicketStr': "{}, {}, {}, {}, {}, {}, {}, N".format(seat_type,passenger['passenger_flag'],passenger['passenger_type'],passenger['passenger_name'],passenger['passenger_id_type_code'],passenger['passenger_id_no'],passenger['mobile_no']),
+            'passengerTicketStr': "{},{},{},{},{},{},{}, N".format(seat_type,passenger['passenger_flag'],passenger['passenger_type'],passenger['passenger_name'],passenger['passenger_id_type_code'],passenger['passenger_id_no'],passenger['mobile_no']),
 
-            'oldPassengerStr': '{}, {}, {}, 1_'.format(passenger['passenger_name'],passenger['passenger_id_type_code'],passenger['passenger_id_no']),
+            'oldPassengerStr': '{},{},{}, 1_'.format(passenger['passenger_name'],passenger['passenger_id_type_code'],passenger['passenger_id_no']),
             'tour_flag': 'dc',
             'randCode':'',
             'whatsSelect': '1',
@@ -357,7 +360,41 @@ class APITool(QObject):
             'REPEAT_SUBMIT_TOKEN': token
         }
         response=cls.session.post(All_url.check_Order_url,data=data_dic)
-        print(response.text)
+        result=response.json()
+        if result['status'] and result['data']['submitStatus']:
+            print('订单检查成功')
+            return True
+        else:
+            return False
+
+    @classmethod
+    def queue_count(cls,train_dic,seatType,token):
+
+        dic_data={
+            'train_date': Config.date_form_trans(train_dic['train_date']),
+            'train_no': train_dic['train_num'],
+            'stationTrainCode': train_dic['train_name'],
+            'seatType': seatType,
+            'fromStationTelecode': train_dic['from_station_code'],
+            'toStationTelecode': train_dic['to_station_code'],
+            'leftTicket': train_dic['left_ticket'],
+            'purpose_codes': '00',
+            'train_location': train_dic['train_location'],
+            '_json_att':'',
+            'REPEAT_SUBMIT_TOKEN': token
+
+        }
+        response=cls.session.post(All_url.Queue_count_url,data=dic_data)
+        result=response.json()
+        if not result['status']:
+            print('查询队列消息失败')
+            return False
+        print('查询队列消息成功','当前余票'+result['data']['ticket'])
+        return True
+
+    @classmethod
+    def confirm_queue(cls):
+        response=cls.session.post(All_url.confirm_queue_url)
 
     @classmethod
     def buy_ticket(cls,train_Dict=None):
@@ -365,15 +402,19 @@ class APITool(QObject):
         if not cls.checkUser_login():
             print('请先登录账户')
             return None
+
         if cls.submit_order_request(train_Dict):
             token=cls.initDc()
-            data_dic={
-                '_json_att':'',
-                'REPEAT_SUBMIT_TOKEN': token
-            }
             passenger_info=cls.get_passenger_info(token)
-            print(passenger_info)
-            cls.check_order_info(cls.query_dic['seat_type'],passenger_info,token)
+            if not cls.check_order_info(cls.query_dic['seat_type'],passenger_info,token):
+                print('订单检查失败')
+                return None
+            if cls.queue_count(train_Dict,cls.query_dic['seat_type'],token):
+                pass
+
+
+
+
 
 
 
@@ -381,5 +422,4 @@ class APITool(QObject):
 
 
 if __name__ == '__main__':
-    a=APITool.get_station_name_reverse()
-    print(a)
+    print(Config.date_form_trans('20190409'))

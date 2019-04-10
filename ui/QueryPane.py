@@ -96,9 +96,7 @@ class QueryPane(QWidget,Ui_Form):
                 else:
                     tmp="->".join([train_dic[key] for key in col_name])
                     model.setItem(row,col,QStandardItem(tmp))
-
         self.tickets_tv.setModel(model)
-
         return result
 
     def filter_tickets(self):
