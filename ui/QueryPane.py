@@ -1,8 +1,9 @@
 from PyQt5.Qt import *
 from ui.query_win import Ui_Form
-from API.API_TOOL import APITool
+from API.API_TOOL import APITool,Config
 from ui.Book_Pane import BookPane
 import re
+
 
 class QueryPane(QWidget,Ui_Form):
     def __init__(self,parent=None,*args,**kwargs):
@@ -38,7 +39,7 @@ class QueryPane(QWidget,Ui_Form):
         self.book_pane=BookPane(self)
 
         self.book_pane.confirm_signal.connect(self.book_filter)
-
+        self.book_pane.cancel_signal.connect(self.cancel)
         self.book_pane.resize(self.width(), 200)
         self.book_pane.move(0, -200)
         self.book_pane.show()
@@ -100,43 +101,64 @@ class QueryPane(QWidget,Ui_Form):
         return result
 
     def filter_tickets(self):
-        print('查询')
 
         start_date = self.start_date_de.text()
-
         dic = APITool.get_all_station()
         from_station_code = dic[self.from_station_cb.currentText()]
         to_station_code = dic[self.to_station_cb.currentText()]
-
         ticket_type_codes = self.buttonGroup.checkedButton().property('q_value')
-
-        result = APITool.ticket_query(start_date, from_station_code, to_station_code, ticket_type_codes,
-                                      seat_type=self.condition['zw'])
+        result = APITool.ticket_query(start_date, from_station_code, to_station_code, ticket_type_codes,seat_type=self.condition['zw'])
         while {} in result:
             result.remove({})
-
         return result
 
     def book_filter(self,condition):
-        self.hide_bookpane()
+        #self.hide_bookpane()
         self.condition=condition
-        #check 手机号码是否正确
-        phone_num=condition['phone_num']
-        p=re.compile('^(13\d|14[5|7]|15\d|166|17[3|6|7]|18\d)\d{8}$')
-        match_phone_num=p.match(phone_num)
-        if len(phone_num)!=11 or not match_phone_num:
-            print('手机号码输入有误')
-            self.book_pane.phone_num_le.clear()
-        else:
-            print(phone_num)
-            result=self.query_tk()
-            if len(result)>0:
-                 APITool.buy_ticket(result[0])
-
+        self.timer.start(3000)
 
     def book_tk(self):
         print('抢票')
         self.show_bookpane()
+        self.timer=QTimer(self)
+        self.timer.timeout.connect(self.buy_ticket_circle)
+
+    def buy_ticket_circle(self):
+
+        seat_type = Config.seat_dic[self.condition['zw']]
+        phone_num = self.condition['phone_num']
+        p = re.compile('^(13\d|14[5|7]|15\d|166|17[3|6|7]|18\d)\d{8}$')
+        match_phone_num = p.match(phone_num)
+        if len(phone_num) != 11 or not match_phone_num:
+            print('手机号码输入有误')
+            self.book_pane.phone_num_le.clear()
+        else:
+            result = self.query_tk()
+            train_name_all = self.book_pane.train_name.text()
+            if len(train_name_all)==0:
+                if len(result) > 0:
+                    print('当前有车票')
+                else:
+                    print('当前无车票')
+            if len(train_name_all)>0:
+                train_name_list = train_name_all.split(',')
+                aim_trains = []
+                for each_result in result:
+                    for train_name in train_name_list:
+                        if each_result['train_name'] == train_name:
+                            if each_result[seat_type].isdigit():
+                                print('由'+each_result['from_station_name']+'开往'+each_result['to_station_name']+'的'+each_result['train_name']+'次列车(起始'+each_result['start_time']+'——'+each_result['arrive_time']+'到达);'+'剩余'+Config.seat_name_dic[seat_type]+'车票'+each_result['seat_type']+'张')
+                            if each_result[seat_type]=='有':
+                                print('由' + each_result['from_station_name'] + '开往' + each_result['to_station_name'] + '的' +each_result['train_name'] + '次列车(起始' + each_result['start_time'] + '——' + each_result['arrive_time'] + '到达);' + '剩余' + Config.seat_name_dic[seat_type] + '车票票数充足' )
+                            aim_trains.append(each_result)
+                            if len(aim_trains)>0:
+                                print('当前有车票')
+                            else:
+                                print('当前无车票')
+
+    def cancel(self):
+        print('取消查询')
+        self.timer.stop()
 
 
 

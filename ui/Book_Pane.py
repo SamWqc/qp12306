@@ -3,6 +3,7 @@ from ui.book_win import Ui_Form
 
 class BookPane(QWidget,Ui_Form):
     confirm_signal = pyqtSignal(dict)
+    cancel_signal=pyqtSignal()
     def __init__(self,parent=None,*args,**kwargs):
         super().__init__(parent,*args,**kwargs)
         self.setupUi(self)
@@ -11,7 +12,12 @@ class BookPane(QWidget,Ui_Form):
     def confirm(self):
         zw=self.buttonGroup.checkedButton().property('val')
         phone_num=self.phone_num_le.text()
+
         self.confirm_signal.emit({'zw':zw,'phone_num':phone_num})
+
+    def cancel(self):
+        self.cancel_signal.emit()
+
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
