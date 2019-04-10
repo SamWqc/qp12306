@@ -35,6 +35,19 @@ class Config(object):
             'WZ': 'no_seat'
         }
 
+    seat_name_dic = {
+
+        'business_seat': '商务座/特等座',
+        'st_seat': '一等座',
+        'hard_seat': '硬座',
+        'advanced_soft_bed': '高级软卧',
+        'soft_bed': '软卧',
+        'hard_bed': '硬卧',
+        'move_bed': '动卧',
+        'sec_seat': '二等座',
+        'no_seat': '无座'
+    }
+
     @staticmethod
     def get_station_file_path():
         current_path = os.path.realpath(__file__)
@@ -150,64 +163,64 @@ class APITool(QObject):
             'appid': 'otn'
         }
         response = cls.session.post(All_url.login_url, data=dic_data)
-        dic=response.json()
+        try:
+            dic=response.json()
+            login_result=dic['result_message']
+            login_code = dic['result_code']
+            uamtk=dic['uamtk']
+            cookie = requests.utils.dict_from_cookiejar(cls.session.cookies)
+            JSESSIONID = cookie['JSESSIONID']
+            if login_code==0:#用户名密码均正确 继续往下
+                response = cls.session.post(All_url.user_login, data={'_json_att': ''})
 
-        login_result=dic['result_message']
-        login_code = dic['result_code']
-        uamtk=dic['uamtk']
-        cookie = requests.utils.dict_from_cookiejar(cls.session.cookies)
-        JSESSIONID = cookie['JSESSIONID']
-
-        if login_code==0:#用户名密码均正确 继续往下
-            response = cls.session.post(All_url.user_login, data={'_json_att': ''})
-
-            response = cls.session.get(All_url.log_redirect)
-            JSESSIONID_1 = response.headers['Set-Cookie']
-            JSESSIONID = re.findall(r"J(.+?);", JSESSIONID_1)
-            JSESSIONID = 'J' + JSESSIONID[0]
+                response = cls.session.get(All_url.log_redirect)
+                JSESSIONID_1 = response.headers['Set-Cookie']
+                JSESSIONID = re.findall(r"J(.+?);", JSESSIONID_1)
+                JSESSIONID = 'J' + JSESSIONID[0]
 
 
-            my_cookie = '_passport_session=' + pass_session + '; uamtk=' + uamtk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
-            headers = {
-                'Cookie': my_cookie,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
-            }
-            cls.session.headers = headers
-            response = cls.session.post(All_url.uamtk_url, data={'appid': 'otn'})
-            cookies_3 = requests.utils.dict_from_cookiejar(cls.session.cookies)
-            dic = response.json()
+                my_cookie = '_passport_session=' + pass_session + '; uamtk=' + uamtk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+                headers = {
+                    'Cookie': my_cookie,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
+                }
+                cls.session.headers = headers
+                response = cls.session.post(All_url.uamtk_url, data={'appid': 'otn'})
+                cookies_3 = requests.utils.dict_from_cookiejar(cls.session.cookies)
+                dic = response.json()
 
-            tk = dic['newapptk']
-            print(response.json()['result_message'])
+                tk = dic['newapptk']
+                print(response.json()['result_message'])
 
-            my_cookie = JSESSIONID + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
-            headers = {
-                'Cookie': my_cookie,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
-            }
-            cls.session.headers = headers
-            response = cls.session.post(All_url.uamtkclient_url, data={'tk': tk})
+                my_cookie = JSESSIONID + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+                headers = {
+                    'Cookie': my_cookie,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
+                }
+                cls.session.headers = headers
+                response = cls.session.post(All_url.uamtkclient_url, data={'tk': tk})
 
-            my_cookie = JSESSIONID + '; tk=' + tk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
-            headers = {
-                'Cookie': my_cookie,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
-            }
-            cls.session.headers = headers
-            response = cls.session.post(All_url.greeting_url)
-            dic = response.json()
-            hello=dic['data']['user_name']+dic['data']['user_regard']
-
-        else:#密码或者用户错误
-            return None
-
-        return login_code,hello
+                my_cookie = JSESSIONID + '; tk=' + tk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+                headers = {
+                    'Cookie': my_cookie,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
+                }
+                cls.session.headers = headers
+                response = cls.session.post(All_url.greeting_url)
+                dic = response.json()
+                hello=dic['data']['user_name']+dic['data']['user_regard']
+            else:#密码或者用户错误
+                return None
+            return login_code,hello
+        except:
+            print('登录失败')
 
     @staticmethod
     def get_station_name_reverse():
         dic=APITool.get_all_station()
         reverse_dic={value: key for key,value in dic.items()}
         return reverse_dic
+
 
     @staticmethod
     def get_all_station():
@@ -324,8 +337,12 @@ class APITool(QObject):
     @classmethod
     def initDc(cls):
         response = cls.session.post(All_url.initDc_url, data={'_json_att':''})
-        token = re.findall(r"var globalRepeatSubmitToken = '(.*?)'", response.text)
-        return token
+        try:
+            token = re.findall(r"var globalRepeatSubmitToken = '(.*?)'", response.text)[0]
+            key_check_isChange= re.findall(r"'key_check_isChange':'(.*?)'", response.text)[0]
+            return (token,key_check_isChange)
+        except:
+            print('获取相关参数失败')
 
     @classmethod
     def get_passenger_info(cls,token):
@@ -368,13 +385,13 @@ class APITool(QObject):
             return False
 
     @classmethod
-    def queue_count(cls,train_dic,seatType,token):
+    def queue_count(cls,train_dic,seat_type,token):
 
         dic_data={
             'train_date': Config.date_form_trans(train_dic['train_date']),
             'train_no': train_dic['train_num'],
             'stationTrainCode': train_dic['train_name'],
-            'seatType': seatType,
+            'seatType': seat_type,
             'fromStationTelecode': train_dic['from_station_code'],
             'toStationTelecode': train_dic['to_station_code'],
             'leftTicket': train_dic['left_ticket'],
@@ -393,24 +410,53 @@ class APITool(QObject):
         return True
 
     @classmethod
-    def confirm_queue(cls):
-        response=cls.session.post(All_url.confirm_queue_url)
+    def confirm_queue(cls,seat_type,passenger,train_dic,token,key_check_isChange):
+        data_dic={
+            'passengerTicketStr':"{},{},{},{},{},{},{}, N".format(seat_type,passenger['passenger_flag'],passenger['passenger_type'],passenger['passenger_name'],passenger['passenger_id_type_code'],passenger['passenger_id_no'],passenger['mobile_no']),
+
+            'oldPassengerStr': '{},{},{}, 1_'.format(passenger['passenger_name'], passenger['passenger_id_type_code'],passenger['passenger_id_no']),
+            'randCode':'',
+            'purpose_codes':'00',
+            'key_check_isChange':key_check_isChange,
+            'leftTicketStr':train_dic['left_ticket'],
+            'train_location':train_dic['train_location'],
+            'choose_seats':'',
+            'seatDetailType':'000',
+            'whatsSelect':'1',
+            'roomType':'00',
+            'dwAll':'N',
+            '_json_att':'',
+            'REPEAT_SUBMIT_TOKEN': token
+
+
+        }
+        response=cls.session.post(All_url.confirm_queue_url,data=data_dic)
+        try:
+            dic=response.json()
+            result=dic['data']['submitStatus']
+            if not result:
+                print('抢票失败')
+            print('抢票成功')
+            print('已经为您抢到'+'由'+train_dic['from_station_name']+'开往'+train_dic['to_station_name']+'的'+train_dic['train_name']+'列车'+'(起始'+train_dic['start_time']+'——'+train_dic['arrive_time']+'到达)的'+Config.seat_name_dic[seat_type]+'车票')
+        except:
+            print('发送请求失败')
 
     @classmethod
-    def buy_ticket(cls,train_Dict=None):
+    def buy_ticket(cls,train_dic=None):
 
         if not cls.checkUser_login():
             print('请先登录账户')
             return None
 
-        if cls.submit_order_request(train_Dict):
-            token=cls.initDc()
+        if cls.submit_order_request(train_dic):
+            token,key_check_isChange=cls.initDc()
             passenger_info=cls.get_passenger_info(token)
             if not cls.check_order_info(cls.query_dic['seat_type'],passenger_info,token):
                 print('订单检查失败')
                 return None
-            if cls.queue_count(train_Dict,cls.query_dic['seat_type'],token):
-                pass
+            if cls.queue_count(train_dic,cls.query_dic['seat_type'],token):
+                cls.confirm_queue(cls.query_dic['seat_type'],passenger_info,train_dic,token,key_check_isChange)
+
 
 
 
