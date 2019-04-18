@@ -52,7 +52,13 @@ class Config(object):
     def get_station_file_path():
         current_path = os.path.realpath(__file__)
         current_dic = os.path.split(current_path)[0]
-        return current_dic+r'\staions'
+        return current_dic+r'/staions'
+
+    @staticmethod
+    def get_curretn_path():
+        current_path = os.path.realpath(__file__)
+        current_dic = os.path.split(current_path)[0]
+        return current_dic
 
 class All_url(object):
     check_url='https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand'  #验证码图片 GET请求
@@ -104,21 +110,17 @@ class APITool(QObject):
         response = cls.session.get('https://kyfw.12306.cn/otn/login/init')
         response.encoding = "utf-8"
         #获取cookie
-        cookies_1 = requests.utils.dict_from_cookiejar(cls.session.cookies)
-        with open("cook1.txt", "w") as fp:
-            json.dump(cookies_1, fp)
 
+        cls.cookies_1 = requests.utils.dict_from_cookiejar(cls.session.cookies)
 
         #获取验证码
         response=cls.session.get(All_url.check_url)
 
-        cookies_2 = requests.utils.dict_from_cookiejar(cls.session.cookies)
-        with open("cook2.txt", "w") as fp:
-            json.dump(cookies_2, fp)
+        cls.cookies_2 = requests.utils.dict_from_cookiejar(cls.session.cookies)
 
-        with open('D:/qp/API/check.jpg','wb') as f:
+        with open(Config.get_curretn_path()+r'/check.jpg','wb') as f:
             f.write(response.content)
-        return 'API/check.jpg'
+        return Config.get_curretn_path()+r'/check.jpg'
 
     @classmethod
     def check_yzm(cls,yzm):
@@ -137,21 +139,13 @@ class APITool(QObject):
     @classmethod
     def login_check(cls,account,pwd):
 
-        with open('D:/qp/ui/cook1.txt', "r") as f:  # 设置文件对象
-            cookies_1 = f.read()
+        pass_ct = cls.cookies_2['_passport_ct']
+        pass_session = cls.cookies_2['_passport_session']
+        BIGGip_pass = cls.cookies_2['BIGipServerpool_passport']
+        BIGGip_otn = cls.cookies_1['BIGipServerotn']
+        route=cls.cookies_2['route']
 
-        with open('D:/qp/ui/cook2.txt', "r") as f:  # 设置文件对象
-            cookies_2 = f.read()
-
-        cookies_1=json.loads(cookies_1)
-        cookies_2=json.loads(cookies_2)
-        pass_ct = cookies_2['_passport_ct']
-        pass_session = cookies_2['_passport_session']
-        BIGGip_pass = cookies_2['BIGipServerpool_passport']
-        BIGGip_otn = cookies_1['BIGipServerotn']
-        route=cookies_2['route']
-
-        my_cookie='_passport_ct='+pass_ct+'; _passport_session='+pass_session+'; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route='+route+'; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+        my_cookie='_passport_ct='+pass_ct+'; _passport_session='+pass_session+'; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555842745895; RAIL_DEVICEID=r9RP5sbK7r_FPw8J_s1e0l6kmD0rON1dsyxclyAntIxSSOvzg0A_czFjeTi3OyB7_ocU9nbLOOFMQMbBIaQWxOEaMTTmcrq-nvYPHjmr_7eZSr_5econ1xxVZJ97cKubru3vTtj9vqGpBJtUDhBsX-zmUHzEsiWx; route='+route+'; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
         headers = {
             'Cookie': my_cookie,
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -168,18 +162,18 @@ class APITool(QObject):
             login_result=dic['result_message']
             login_code = dic['result_code']
             uamtk=dic['uamtk']
-            cookie = requests.utils.dict_from_cookiejar(cls.session.cookies)
-            JSESSIONID = cookie['JSESSIONID']
+
+
             if login_code==0:#用户名密码均正确 继续往下
                 response = cls.session.post(All_url.user_login, data={'_json_att': ''})
 
-                response = cls.session.get(All_url.log_redirect)
+
                 JSESSIONID_1 = response.headers['Set-Cookie']
                 JSESSIONID = re.findall(r"J(.+?);", JSESSIONID_1)
                 JSESSIONID = 'J' + JSESSIONID[0]
 
 
-                my_cookie = '_passport_session=' + pass_session + '; uamtk=' + uamtk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+                my_cookie = '_passport_session=' + pass_session + '; uamtk=' + uamtk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555842745895; RAIL_DEVICEID=r9RP5sbK7r_FPw8J_s1e0l6kmD0rON1dsyxclyAntIxSSOvzg0A_czFjeTi3OyB7_ocU9nbLOOFMQMbBIaQWxOEaMTTmcrq-nvYPHjmr_7eZSr_5econ1xxVZJ97cKubru3vTtj9vqGpBJtUDhBsX-zmUHzEsiWx; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
                 headers = {
                     'Cookie': my_cookie,
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -192,7 +186,7 @@ class APITool(QObject):
                 tk = dic['newapptk']
                 print(response.json()['result_message'])
 
-                my_cookie = JSESSIONID + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+                my_cookie = JSESSIONID + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555842745895; RAIL_DEVICEID=r9RP5sbK7r_FPw8J_s1e0l6kmD0rON1dsyxclyAntIxSSOvzg0A_czFjeTi3OyB7_ocU9nbLOOFMQMbBIaQWxOEaMTTmcrq-nvYPHjmr_7eZSr_5econ1xxVZJ97cKubru3vTtj9vqGpBJtUDhBsX-zmUHzEsiWx; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
                 headers = {
                     'Cookie': my_cookie,
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -200,7 +194,7 @@ class APITool(QObject):
                 cls.session.headers = headers
                 response = cls.session.post(All_url.uamtkclient_url, data={'tk': tk})
 
-                my_cookie = JSESSIONID + '; tk=' + tk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555130967371; RAIL_DEVICEID=bNlknRyILJsX5wzDMp6jhPCnhYo5UDkxpRx6dHMZ_Wo6I_bRLG5FKszPdzVAh9R6PN8t-JpTA2WaJE2m_MXGPrE4qPeuLWRp_M4d7m1igLEMtX5QhwfGFr0leXyKBrrCJryENZyDa0jYj0HeZxyWxhpVZYnpRmh2; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+                my_cookie = JSESSIONID + '; tk=' + tk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555842745895; RAIL_DEVICEID=r9RP5sbK7r_FPw8J_s1e0l6kmD0rON1dsyxclyAntIxSSOvzg0A_czFjeTi3OyB7_ocU9nbLOOFMQMbBIaQWxOEaMTTmcrq-nvYPHjmr_7eZSr_5econ1xxVZJ97cKubru3vTtj9vqGpBJtUDhBsX-zmUHzEsiWx; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
                 headers = {
                     'Cookie': my_cookie,
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -468,4 +462,5 @@ class APITool(QObject):
 
 
 if __name__ == '__main__':
-    print(Config.date_form_trans('20190409'))
+    a=Config.get_png_file_path()
+    print(a)
