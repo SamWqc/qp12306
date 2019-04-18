@@ -5,6 +5,7 @@ from ui.Book_Pane import BookPane
 import re
 
 
+
 class QueryPane(QWidget,Ui_Form):
     def __init__(self,parent=None,*args,**kwargs):
         super().__init__(parent,*args,**kwargs)
