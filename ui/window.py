@@ -27,7 +27,7 @@ class login_window(QWidget,Ui_Dialog):
         print('刷新验证码')
         thread=download_yzm_thread(self)
         def parse_yzm_url(url):
-            url = 'D:/qp/' + url
+
             check_pixmap = QPixmap(url)
             self.yzm_label.setPixmap(check_pixmap)
             self.yzm_label.clear_points()
