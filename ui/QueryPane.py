@@ -138,9 +138,10 @@ class QueryPane(QWidget,Ui_Form):
             train_name_all = self.book_pane.train_name.text()
             if len(train_name_all)==0:
                 if len(result) > 0:
-                    print('当前有车票')
+                    print('当前有车票,正在为您订票')
+                    APITool.buy_ticket(train_dic=result[0])
                 else:
-                    print('当前无车票')
+                    print('当前无车票,继续刷票')
             if len(train_name_all)>0:
                 train_name_list = train_name_all.split(',')
                 aim_trains = []
@@ -152,14 +153,17 @@ class QueryPane(QWidget,Ui_Form):
                             if each_result[seat_type]=='有':
                                 print('由' + each_result['from_station_name'] + '开往' + each_result['to_station_name'] + '的' +each_result['train_name'] + '次列车(起始' + each_result['start_time'] + '——' + each_result['arrive_time'] + '到达);' + '剩余' + Config.seat_name_dic[seat_type] + '车票票数充足' )
                             aim_trains.append(each_result)
-                            if len(aim_trains)>0:
-                                print('当前有车票')
-                            else:
-                                print('当前无车票')
+                if len(aim_trains)>0:
+                    print('当前有车票,正在为您订票')
+                    APITool.buy_ticket(train_dic=aim_trains[0])
+                else:
+                    print('当前'+train_name_all+'次列车无车票,继续刷票')
+
 
     def cancel(self):
         print('取消查询')
         self.timer.stop()
+        self.hide_bookpane()
 
 
 
