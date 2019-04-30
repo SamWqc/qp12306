@@ -10,8 +10,6 @@ import time
 class Config(object):
 
     #cookie参数
-    RAIL_DEVICED='p7DXK0g9kNKsj3BNiJD1caVPhxuRKbWF_0CdjZgZ0jayCBLcDZSi4KGuUx5sjQLMcuKmkhaRtL7TaEdwpIqu6jV7T1jvoNp3WDxjcRqzul_T1V1fIAecDlEejZ1P-cLxZOqw941uTa4nWFZnwZPKEsbiyBavhYHg'
-    RAIL_EXPIRATION='1556288447283'
 
     now=datetime.datetime.now()
     date1=now.strftime('%Y-%m-%d')
@@ -63,6 +61,19 @@ class Config(object):
         current_path = os.path.realpath(__file__)
         current_dic = os.path.split(current_path)[0]
         return current_dic
+
+    @staticmethod
+    def input_CookieID():
+        with open(Config.get_curretn_path() + r'CookieID', 'r') as f:
+            CookieID =json.loads(f.read(),encoding='utf-8')
+            RAIL_DEVICED =CookieID['RAIL_DEVICED']
+            RAIL_EXPIRATION = CookieID['RAIL_EXPIRATION']
+            if len(RAIL_EXPIRATION)==0 or len(RAIL_EXPIRATION)==0:
+                print('请输入正确的cookie参数')
+                return None
+            else:
+                return (RAIL_DEVICED,RAIL_EXPIRATION)
+
 
 class All_url(object):
     check_url='https://kyfw.12306.cn/passport/captcha/captcha-image?login_site=E&module=login&rand=sjrand'  #验证码图片 GET请求
@@ -149,7 +160,9 @@ class APITool(QObject):
         BIGGip_otn = cls.cookies_1['BIGipServerotn']
         route=cls.cookies_2['route']
 
-        my_cookie='_passport_ct='+pass_ct+'; _passport_session='+pass_session+'; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION='+Config.RAIL_EXPIRATION+'; RAIL_DEVICEID='+Config.RAIL_DEVICED+'; route='+route+'; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+        RAIL_DEVICED=Config.input_CookieID()[0]
+        RAIL_EXPIRATION=Config.input_CookieID()[1]
+        my_cookie='_passport_ct='+pass_ct+'; _passport_session='+pass_session+'; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION='+RAIL_EXPIRATION+'; RAIL_DEVICEID='+RAIL_DEVICED+'; route='+route+'; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
         headers = {
             'Cookie': my_cookie,
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -177,7 +190,7 @@ class APITool(QObject):
                 JSESSIONID = 'J' + JSESSIONID[0]
 
 
-                my_cookie = '_passport_session=' + pass_session + '; uamtk=' + uamtk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION='+Config.RAIL_EXPIRATION+'; RAIL_DEVICEID='+Config.RAIL_DEVICED+'; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+                my_cookie = '_passport_session=' + pass_session + '; uamtk=' + uamtk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION='+RAIL_EXPIRATION+'; RAIL_DEVICEID='+RAIL_DEVICED+'; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
                 headers = {
                     'Cookie': my_cookie,
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -190,7 +203,7 @@ class APITool(QObject):
                 tk = dic['newapptk']
                 print(response.json()['result_message'])
 
-                my_cookie = JSESSIONID + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555842745895; RAIL_DEVICEID='+Config.RAIL_EXPIRATION+'; RAIL_DEVICEID='+Config.RAIL_DEVICED+'; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+                my_cookie = JSESSIONID + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555842745895; RAIL_DEVICEID='+RAIL_EXPIRATION+'; RAIL_DEVICEID='+RAIL_DEVICED+'; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
                 headers = {
                     'Cookie': my_cookie,
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -198,7 +211,7 @@ class APITool(QObject):
                 cls.session.headers = headers
                 response = cls.session.post(All_url.uamtkclient_url, data={'tk': tk})
 
-                my_cookie = JSESSIONID + '; tk=' + tk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555842745895; RAIL_DEVICEID='+Config.RAIL_EXPIRATION+'; RAIL_DEVICEID='+Config.RAIL_DEVICED+'; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
+                my_cookie = JSESSIONID + '; tk=' + tk + '; ten_js_key=6xOp4XVGdN9%2FTvfJFcMTxizDWca166J6; ten_key=mo/81LXM/45d0AmB+Pbd3BSx0GJbo+Pm; _jc_save_wfdc_flag=dc; _jc_save_fromStation=%u5317%u4EAC%2CBJP; _jc_save_toStation=%u4E0A%u6D77%2CSHH; RAIL_EXPIRATION=1555842745895; RAIL_DEVICEID='+RAIL_EXPIRATION+'; RAIL_DEVICEID='+RAIL_DEVICED+'; route=' + route + '; BIGipServerpool_passport='+BIGGip_pass+'; _jc_save_toDate='+Config.date1+'; _jc_save_fromDate='+Config.date2+'; BIGipServerpassport=770179338.50215.0000; BIGipServerotn='+BIGGip_otn
                 headers = {
                     'Cookie': my_cookie,
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36'
@@ -454,11 +467,6 @@ class APITool(QObject):
                 return None
             if cls.queue_count(train_dic,cls.query_dic['seat_type'],token):
                 cls.confirm_queue(cls.query_dic['seat_type'],passenger_info,train_dic,token,key_check_isChange)
-
-
-
-
-
 
 
 
