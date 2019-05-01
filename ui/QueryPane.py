@@ -139,23 +139,25 @@ class QueryPane(QWidget,Ui_Form):
             if len(train_name_all)==0:
                 if len(result) > 0:
                     print('当前有车票,正在为您订票')
-                    APITool.buy_ticket(train_dic=result[0])
+                    book_result=APITool.buy_ticket(train_dic=result[0])
+                    if book_result:
+                        self.cancel()
+                    else:
+                        print('抢票失败继续抢票')
                 else:
                     print('当前无车票,继续刷票')
             if len(train_name_all)>0:
                 train_name_list = train_name_all.split(',')
-                aim_trains = []
                 for each_result in result:
-                    for train_name in train_name_list:
-                        if each_result['train_name'] == train_name:
-                            if each_result[seat_type].isdigit():
-                                print('由'+each_result['from_station_name']+'开往'+each_result['to_station_name']+'的'+each_result['train_name']+'次列车(起始'+each_result['start_time']+'——'+each_result['arrive_time']+'到达);'+'剩余'+Config.seat_name_dic[seat_type]+'车票'+each_result['seat_type']+'张')
-                            if each_result[seat_type]=='有':
-                                print('由' + each_result['from_station_name'] + '开往' + each_result['to_station_name'] + '的' +each_result['train_name'] + '次列车(起始' + each_result['start_time'] + '——' + each_result['arrive_time'] + '到达);' + '剩余' + Config.seat_name_dic[seat_type] + '车票票数充足' )
-                            aim_trains.append(each_result)
-                if len(aim_trains)>0:
-                    print('当前有车票,正在为您订票')
-                    APITool.buy_ticket(train_dic=aim_trains[0])
+                    if each_result['train_name'] in train_name_list:
+                        book_result=APITool.buy_ticket(train_dic=each_result)
+                        if book_result:
+                            self.cancel()
+                        else:
+                            print('抢票失败继续抢票')
+                    else:
+                        continue
+
                 else:
                     print('当前'+train_name_all+'次列车无车票,继续刷票')
 

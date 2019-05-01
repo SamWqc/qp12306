@@ -64,7 +64,7 @@ class Config(object):
 
     @staticmethod
     def input_CookieID():
-        with open(Config.get_curretn_path() + r'CookieID', 'r') as f:
+        with open(Config.get_curretn_path() + r'/CookieID', 'r') as f:
             CookieID =json.loads(f.read(),encoding='utf-8')
             RAIL_DEVICED =CookieID['RAIL_DEVICED']
             RAIL_EXPIRATION = CookieID['RAIL_EXPIRATION']
@@ -454,20 +454,23 @@ class APITool(QObject):
 
     @classmethod
     def buy_ticket(cls,train_dic=None):
-
-        if not cls.checkUser_login():
-            print('请先登录账户')
-            return None
-
-        if cls.submit_order_request(train_dic):
-            token,key_check_isChange=cls.initDc()
-            passenger_info=cls.get_passenger_info(token)
-            if not cls.check_order_info(cls.query_dic['seat_type'],passenger_info,token):
-                print('订单检查失败')
+        try:
+            if not cls.checkUser_login():
+                print('请先登录账户')
                 return None
-            if cls.queue_count(train_dic,cls.query_dic['seat_type'],token):
-                cls.confirm_queue(cls.query_dic['seat_type'],passenger_info,train_dic,token,key_check_isChange)
 
+            if cls.submit_order_request(train_dic):
+                token,key_check_isChange=cls.initDc()
+                passenger_info=cls.get_passenger_info(token)
+                if not cls.check_order_info(cls.query_dic['seat_type'],passenger_info,token):
+                    print('订单检查失败')
+                    return None
+                if cls.queue_count(train_dic,cls.query_dic['seat_type'],token):
+                    cls.confirm_queue(cls.query_dic['seat_type'],passenger_info,train_dic,token,key_check_isChange)
+
+            return True
+        except:
+            return False
 
 
 
